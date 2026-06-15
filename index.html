@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en-GB" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Markdown Renderer</title>
+
+  <!-- Vendored libraries (loaded as classic scripts so the page also works from file://) -->
+  <link id="hljs-light" rel="stylesheet" href="vendor/highlight-github.min.css">
+  <link id="hljs-dark"  rel="stylesheet" href="vendor/highlight-github-dark.min.css" disabled>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1 class="topbar__title">Markdown Renderer</h1>
+    <div class="topbar__actions">
+      <button id="choose-folder" type="button" class="btn btn--primary">Choose folder…</button>
+      <button id="theme-toggle"  type="button" class="btn" aria-label="Toggle light/dark theme">🌓</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar" aria-label="Markdown files">
+      <label class="field">
+        <span class="field__label">Selected folder</span>
+        <input id="folder-path" class="field__input" type="text" readonly
+               placeholder="No folder chosen" aria-label="Selected folder (read-only)">
+      </label>
+
+      <label class="field">
+        <span class="field__label">Filter</span>
+        <input id="file-filter" class="field__input" type="search"
+               placeholder="Filter files…" autocomplete="off" disabled>
+      </label>
+
+      <p id="sidebar-status" class="sidebar__status">Choose a folder to list its markdown files.</p>
+      <ul id="file-list" class="file-list" role="listbox" aria-label="Markdown file list"></ul>
+    </aside>
+
+    <section class="display" aria-label="Rendered document">
+      <article id="content" class="content markdown-body" tabindex="0">
+        <div class="placeholder">
+          <h2>No document loaded</h2>
+          <p>Click <strong>Choose folder…</strong>, then pick a markdown file from the sidebar.</p>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <!-- Hidden fallback picker for browsers without the File System Access API -->
+  <input id="fallback-input" type="file" webkitdirectory multiple hidden
+         accept=".md,.markdown,text/markdown">
+
+  <script src="vendor/marked.min.js"></script>
+  <script src="vendor/purify.min.js"></script>
+  <script src="vendor/highlight.min.js"></script>
+  <script src="src/paths.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

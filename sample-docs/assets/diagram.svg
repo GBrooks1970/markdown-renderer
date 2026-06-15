@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="120" viewBox="0 0 420 120" role="img" aria-label="Pipeline diagram">
+  <rect width="420" height="120" fill="#f6f8fa" stroke="#d0d7de" rx="8"/>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="13" text-anchor="middle">
+    <rect x="20"  y="40" width="100" height="40" rx="6" fill="#ddf4ff" stroke="#0969da"/>
+    <text x="70"  y="65">Folder</text>
+    <rect x="160" y="40" width="100" height="40" rx="6" fill="#ddf4ff" stroke="#0969da"/>
+    <text x="210" y="65">Enumerate</text>
+    <rect x="300" y="40" width="100" height="40" rx="6" fill="#ddf4ff" stroke="#0969da"/>
+    <text x="350" y="65">Render</text>
+    <path d="M120 60 H160" stroke="#0969da" stroke-width="2" marker-end="url(#a)"/>
+    <path d="M260 60 H300" stroke="#0969da" stroke-width="2" marker-end="url(#a)"/>
+  </g>
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0 0 L6 3 L0 6 Z" fill="#0969da"/>
+    </marker>
+  </defs>
+</svg>

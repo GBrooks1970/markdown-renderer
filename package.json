@@ -1,0 +1,29 @@
+{
+  "name": "markdown-renderer",
+  "version": "0.1.0",
+  "description": "A self-contained static HTML page that renders local markdown files: pick a folder, browse its markdown in a sidebar, and read any file as formatted, syntax-highlighted HTML. No build step, no server, no network at runtime.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "typecheck": "tsc -p tsconfig.spec.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "verify": "npm run typecheck && npm run test && npm run test:e2e"
+  },
+  "keywords": [
+    "markdown",
+    "viewer",
+    "static",
+    "offline",
+    "vanilla-js",
+    "test-automation"
+  ],
+  "devDependencies": {
+    "@playwright/test": "^1.53.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
