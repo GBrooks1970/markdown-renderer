@@ -8,7 +8,7 @@
  */
 import { beforeAll, describe, expect, it } from 'vitest';
 import '../src/paths.js';
-import type { MarkdownRendererPaths } from '../src/paths.js';
+import type { MarkdownRendererPaths, TreeDir, TreeNode } from '../src/paths.js';
 
 let paths: MarkdownRendererPaths;
 
@@ -78,5 +78,90 @@ describe('resolvePath', () => {
   it('returns null for an empty reference', () => {
     expect(paths.resolvePath('a/b.md', '')).toBeNull();
     expect(paths.resolvePath('a/b.md', '#only-anchor')).toBeNull();
+  });
+});
+
+/** Shorthand: a descriptor as produced by the Enumeration module. */
+const d = (relativePath: string) => ({ relativePath });
+
+/** Readable projection of a node list for order assertions. */
+const shape = (nodes: TreeNode[]) => nodes.map((n) => `${n.kind}:${n.name}`);
+
+describe('buildTree', () => {
+  it('nests by folder with dirs before files, alphabetical within each group', () => {
+    const tree = paths.buildTree([
+      d('readme.md'), d('docs/b.md'), d('docs/a.md'), d('docs/img/x.md'),
+    ]);
+    expect(shape(tree.children)).toEqual(['dir:docs', 'file:readme.md']);
+    const docs = tree.children[0] as TreeDir;
+    expect(docs.path).toBe('docs');
+    expect(shape(docs.children)).toEqual(['dir:img', 'file:a.md', 'file:b.md']);
+  });
+
+  it('handles root-level files only', () => {
+    const tree = paths.buildTree([d('b.md'), d('a.md')]);
+    expect(shape(tree.children)).toEqual(['file:a.md', 'file:b.md']);
+  });
+
+  it('normalises backslash separators and "./" prefixes', () => {
+    const tree = paths.buildTree([d('docs\\sub\\x.md'), d('./docs/y.md')]);
+    const docs = tree.children[0] as TreeDir;
+    expect(docs.name).toBe('docs');
+    expect(shape(docs.children)).toEqual(['dir:sub', 'file:y.md']);
+    expect((docs.children[0] as TreeDir).children[0].path).toBe('docs/sub/x.md');
+  });
+
+  it('keeps a folder and a file sharing a name as distinct siblings, dir first', () => {
+    const tree = paths.buildTree([d('docs.md'), d('docs/inner.md')]);
+    expect(shape(tree.children)).toEqual(['dir:docs', 'file:docs.md']);
+  });
+
+  it('sorts case-insensitively with a deterministic tiebreak', () => {
+    const tree = paths.buildTree([d('Zeta.md'), d('alpha.md'), d('Alpha.md')]);
+    expect(tree.children.map((n) => n.name)).toEqual(['Alpha.md', 'alpha.md', 'Zeta.md']);
+  });
+
+  it('returns an empty root for no descriptors — and never phantom folders', () => {
+    expect(paths.buildTree([]).children).toEqual([]);
+  });
+
+  it('carries the original descriptor through untouched', () => {
+    const input = { relativePath: 'docs/a.md', extra: 42 };
+    const tree = paths.buildTree([input]);
+    const file = (tree.children[0] as TreeDir).children[0];
+    expect(file.kind).toBe('file');
+    expect((file as { descriptor: unknown }).descriptor).toBe(input);
+  });
+});
+
+describe('ancestorsOf', () => {
+  it('lists folder paths outermost first', () => {
+    expect(paths.ancestorsOf('a/b/c/file.md')).toEqual(['a', 'a/b', 'a/b/c']);
+  });
+
+  it('is empty for a root-level file', () => {
+    expect(paths.ancestorsOf('file.md')).toEqual([]);
+  });
+});
+
+describe('restoreTreeState', () => {
+  const tree = () => paths.buildTree([d('docs/a.md'), d('docs/img/x.md'), d('root.md')]);
+
+  it('keeps surviving expanded folders and drops vanished ones', () => {
+    const restored = paths.restoreTreeState(tree(), new Set(['docs', 'gone/away']), null);
+    expect(restored.expanded).toEqual(['docs']);
+    expect(restored.activePath).toBeNull();
+  });
+
+  it('keeps the active file when it still exists and reveals its ancestors', () => {
+    const restored = paths.restoreTreeState(tree(), new Set<string>(), 'docs/img/x.md');
+    expect(restored.activePath).toBe('docs/img/x.md');
+    expect(restored.expanded).toEqual(['docs', 'docs/img']);
+  });
+
+  it('clears the active file when it no longer exists', () => {
+    const restored = paths.restoreTreeState(tree(), new Set(['docs']), 'docs/deleted.md');
+    expect(restored.activePath).toBeNull();
+    expect(restored.expanded).toEqual(['docs']);
   });
 });

@@ -73,9 +73,13 @@ npx playwright install chromium
 ```
 1. Open index.html in a browser (or serve it on localhost).
 2. Click "Choose folder" and select a folder containing markdown files.
-3. The sidebar lists every .md / .markdown file found (including sub-folders).
+3. The sidebar shows the folder layout as a tree of every .md / .markdown file
+   found; click a folder to expand or collapse it.
 4. Click a file to render it in the scrollable display pane.
-5. Use the filter box to narrow the file list.
+5. Use the filter box to narrow the list (a flat list of matches while filtering).
+6. Click the refresh button (next to the folder path) to re-read the folder —
+   on Chromium this is seamless; on Firefox/Safari the picker re-opens (the
+   fallback's folder snapshot cannot be re-read).
 ```
 
 ---
@@ -91,8 +95,8 @@ npm run test:e2e     # Playwright E2E tests (e2e/) — auto-starts the dev serve
 npm run verify       # typecheck + unit + e2e (the full gate)
 ```
 
-- **Unit (`spec/`)** — the pure path/URL helpers in `src/paths.js` (resolution of `.`/`..`, query/hash stripping, markdown/external classification).
-- **E2E (`e2e/`)** — the real browser flow against `sample-docs/`: listing/sorting, filtering, rendering with code highlighting and tables, relative images resolving to `blob:` URLs, internal-link navigation, and external links opening in a new tab. The native File System Access API dialog cannot be automated, so the E2E suite drives the `webkitdirectory` fallback path (same pipeline).
+- **Unit (`spec/`)** — the pure helpers in `src/paths.js`: path/URL resolution (`.`/`..`, query/hash stripping, markdown/external classification) and the sidebar-tree logic (`buildTree` nesting/ordering, `ancestorsOf`, refresh state restoration).
+- **E2E (`e2e/`)** — the real browser flow against `sample-docs/`: the folder tree (dirs first, drilldown, reveal-on-link-navigation), filtering with tree restore, rendering with code highlighting and tables, relative images resolving to `blob:` URLs, internal-link navigation, external links opening in a new tab, and refresh (new file appears, open document survives, vanished document reported). The native File System Access API dialog cannot be automated, so the E2E suite drives the `webkitdirectory` fallback path (same pipeline).
 
 ---
 
@@ -100,12 +104,13 @@ npm run verify       # typecheck + unit + e2e (the full gate)
 
 A single page hosts a two-pane layout (sidebar + display pane) driven by three small vanilla-JS modules:
 
-- **Folder Access Module** — obtains a directory via the File System Access API, with a `webkitdirectory` fallback.
+- **Folder Access Module** — obtains a directory via the File System Access API, with a `webkitdirectory` fallback; refresh re-walks the retained handle (or re-opens the fallback picker — its folder snapshot cannot be re-read).
 - **Enumeration Module** — recursively collects and sorts markdown file descriptors.
 - **Render Module** — parses markdown (`marked`), sanitises the output (`DOMPurify`), and highlights code (`highlight.js`) before display.
 - **Resource Resolution Module** — resolves relative images (shown via same-folder `blob:` URLs) and internal `.md` links (navigate within the viewer) against the picked folder; external links open in a new tab.
+- **Sidebar tree** — the flat descriptor list is nested by a pure `buildTree()` helper in `src/paths.js` and rendered as native `<details>/<summary>` folder nodes; expansion state survives selection, filtering, and refresh.
 
-All generated HTML is sanitised before insertion to prevent XSS, and only same-folder `blob:` resources are ever injected. Tests use **Vitest** (unit) and **Playwright** (E2E) as dev-only tooling — the shipped page stays build-free. See [`docs/design-document.md`](docs/design-document.md) for the complete design, decisions, and rationale.
+All generated HTML is sanitised before insertion to prevent XSS, and only same-folder `blob:` resources are ever injected. Tests use **Vitest** (unit) and **Playwright** (E2E) as dev-only tooling — the shipped page stays build-free. See [`docs/design-document.md`](docs/design-document.md) for the complete design, decisions, and rationale, and [`docs/design-document-folder-navigation.md`](docs/design-document-folder-navigation.md) for the folder-tree/drilldown/refresh features (FR-9..FR-11).
 
 ---
 

@@ -21,11 +21,15 @@
 
   <main class="layout">
     <aside class="sidebar" aria-label="Markdown files">
-      <label class="field">
+      <div class="field">
         <span class="field__label">Selected folder</span>
-        <input id="folder-path" class="field__input" type="text" readonly
-               placeholder="No folder chosen" aria-label="Selected folder (read-only)">
-      </label>
+        <div class="field__row">
+          <input id="folder-path" class="field__input" type="text" readonly
+                 placeholder="No folder chosen" aria-label="Selected folder (read-only)">
+          <button id="refresh-folder" type="button" class="btn btn--icon" disabled
+                  title="Refresh folder listing" aria-label="Refresh folder listing">⟳</button>
+        </div>
+      </div>
 
       <label class="field">
         <span class="field__label">Filter</span>
@@ -34,7 +38,7 @@
       </label>
 
       <p id="sidebar-status" class="sidebar__status">Choose a folder to list its markdown files.</p>
-      <ul id="file-list" class="file-list" role="listbox" aria-label="Markdown file list"></ul>
+      <ul id="file-list" class="file-list" aria-label="Markdown file list"></ul>
     </aside>
 
     <section class="display" aria-label="Rendered document">
