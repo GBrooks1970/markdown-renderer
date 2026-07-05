@@ -7,11 +7,13 @@
 
 # Markdown Renderer
 
-**Updated: 2026-06-15**
+**Updated: 2026-07-05**
 
 A general-purpose, self-contained static HTML page that renders local markdown files. Pick a folder, browse its markdown files in a sidebar, and read any of them as formatted, syntax-highlighted HTML in a scrollable pane. It runs entirely client-side with **no build step and no network connection** — open the page in a browser and use it.
 
-This project is currently at the **design stage**. The design document is the authoritative artefact; implementation (`index.html`, `vendor/`) follows once the design is approved.
+The project is **implemented and tested** (design → implementation → Vitest/Playwright suite, all green). The design document remains the authoritative record of requirements and decisions.
+
+**Live demo:** <https://gbrooks1970.github.io/markdown-renderer/> — the page served straight from this repository via GitHub Pages. To try it, click "Choose folder" and pick any local folder of markdown files (for example a clone of this repository's [`sample-docs/`](sample-docs/) folder).
 
 ---
 

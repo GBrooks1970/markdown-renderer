@@ -1,0 +1,49 @@
+# Publish the static page to GitHub Pages as a live demo on every push to
+# main. The page is self-contained (no build step, vendored libraries —
+# DR-MR-02/DR-MR-04), so deployment is just copying the runtime files:
+# only what the browser needs is staged, keeping test tooling, docs and
+# workflow files out of the published site.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Stage the runtime files
+        run: |
+          mkdir -p _site
+          cp index.html styles.css app.js _site/
+          cp -r src vendor sample-docs _site/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
