@@ -29,4 +29,5 @@ console.log(greet("world"));
 ## Navigate
 
 - Go to the [Guide](guide.md) (internal link → loads in the viewer)
+- Read the [changelog](notes/changelog.md) (nested folder → the tree reveals it)
 - Visit [the marked project](https://github.com/markedjs/marked) (external → new tab)

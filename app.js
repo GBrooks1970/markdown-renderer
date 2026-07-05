@@ -5,9 +5,10 @@
  *   Enumeration   — collect + sort markdown descriptors; expose a lazy folder index for any file
  *   Render        — markdown -> sanitised HTML -> syntax highlight
  *   Resolve       — relative images (same-folder blob URLs) + internal .md link navigation
- *   UI            — wire DOM, sidebar, filter, theme
+ *   UI            — wire DOM, sidebar tree + filter, refresh, theme
  *
- * See docs/design-document.md (FR-1..FR-8, DR-MR-01..06).
+ * See docs/design-document.md (FR-1..FR-8, DR-MR-01..07) and
+ * docs/design-document-folder-navigation.md (FR-9..FR-11, DR-MR-08..11).
  */
 (function () {
   "use strict";
@@ -104,7 +105,11 @@
       } else {
         const fileMap = new Map(); // resolvedPath -> File
         for (const file of source.fileList) {
-          const path = file.webkitRelativePath || file.name;
+          const raw = file.webkitRelativePath || file.name;
+          // webkitRelativePath is prefixed with the picked folder's own name;
+          // strip it so both backends yield the same folder-relative paths
+          // (the fsapi walk starts inside the picked folder).
+          const path = raw.includes("/") ? raw.slice(raw.indexOf("/") + 1) : raw;
           fileMap.set(path, file);
           if (Paths.isMarkdownPath(file.name)) {
             markdown.push(makeDescriptor(path, async () => file));
@@ -223,6 +228,7 @@
   (function UI() {
     const els = {
       choose:   document.getElementById("choose-folder"),
+      refresh:  document.getElementById("refresh-folder"),
       theme:    document.getElementById("theme-toggle"),
       path:     document.getElementById("folder-path"),
       filter:   document.getElementById("file-filter"),
@@ -233,46 +239,96 @@
       hljsDark: document.getElementById("hljs-dark"),
     };
 
-    let state = { descriptors: [], index: null, activePath: null };
+    // expanded (Set of folder paths) is the single source of truth for
+    // drilldown state; <details> toggle events write it, renders read it.
+    let state = { source: null, descriptors: [], index: null, activePath: null, expanded: new Set() };
 
     function setStatus(msg) { els.status.textContent = msg; els.status.style.display = msg ? "" : "none"; }
+
+    function setPathDisplay(source) {
+      els.path.value = source.label + (source.kind === "input" ? "  (fallback picker)" : "");
+    }
+
+    function fileItem(descriptor, showPath) {
+      const li = document.createElement("li");
+      li.className = "file-list__item" + (descriptor.relativePath === state.activePath ? " is-active" : "");
+      li.title = descriptor.relativePath;
+
+      const name = document.createElement("span");
+      name.textContent = descriptor.name;
+      li.appendChild(name);
+
+      if (showPath && descriptor.relativePath.includes("/")) {
+        const sub = document.createElement("span");
+        sub.className = "file-list__path";
+        sub.textContent = descriptor.relativePath.slice(0, descriptor.relativePath.lastIndexOf("/"));
+        li.appendChild(sub);
+      }
+
+      li.addEventListener("click", () => open(descriptor));
+      return li;
+    }
+
+    // FR-10/FR-11: folders as <details>/<summary>, files as plain rows.
+    function treeNode(node) {
+      if (node.kind === "file") return fileItem(node.descriptor, false);
+
+      const li = document.createElement("li");
+      const details = document.createElement("details");
+      details.className = "tree-dir";
+      details.dataset.path = node.path;
+      details.open = state.expanded.has(node.path);
+
+      const summary = document.createElement("summary");
+      summary.className = "tree-dir__label";
+      summary.textContent = node.name;
+      summary.title = node.path;
+      details.appendChild(summary);
+
+      const ul = document.createElement("ul");
+      ul.className = "tree-dir__children";
+      for (const child of node.children) ul.appendChild(treeNode(child));
+      details.appendChild(ul);
+
+      details.addEventListener("toggle", () => {
+        if (details.open) state.expanded.add(node.path);
+        else state.expanded.delete(node.path);
+      });
+
+      li.appendChild(details);
+      return li;
+    }
 
     function renderSidebar() {
       const term = els.filter.value.trim().toLowerCase();
       els.list.innerHTML = "";
-      const visible = state.descriptors.filter(
-        (d) => !term || d.relativePath.toLowerCase().includes(term)
-      );
 
-      if (!state.descriptors.length) { setStatus("No markdown files found in this folder."); return; }
-      if (!visible.length) { setStatus("No files match the filter."); return; }
-      setStatus("");
-
-      for (const d of visible) {
-        const li = document.createElement("li");
-        li.className = "file-list__item";
-        li.setAttribute("role", "option");
-        li.setAttribute("aria-selected", String(d.relativePath === state.activePath));
-        li.title = d.relativePath;
-
-        const name = document.createElement("span");
-        name.textContent = d.name;
-        li.appendChild(name);
-
-        if (d.relativePath.includes("/")) {
-          const sub = document.createElement("span");
-          sub.className = "file-list__path";
-          sub.textContent = d.relativePath.slice(0, d.relativePath.lastIndexOf("/"));
-          li.appendChild(sub);
-        }
-
-        li.addEventListener("click", () => open(d));
-        els.list.appendChild(li);
+      if (!state.descriptors.length) {
+        if (state.source) setStatus("No markdown files found in this folder.");
+        return;
       }
+
+      // DR-MR-11: while filtering, a flat matched list; otherwise the tree.
+      if (term) {
+        const visible = state.descriptors.filter((d) => d.relativePath.toLowerCase().includes(term));
+        if (!visible.length) { setStatus("No files match the filter."); return; }
+        setStatus("");
+        for (const d of visible) els.list.appendChild(fileItem(d, true));
+      } else {
+        setStatus("");
+        const root = Paths.buildTree(state.descriptors);
+        for (const child of root.children) els.list.appendChild(treeNode(child));
+      }
+
+      const active = els.list.querySelector(".is-active");
+      if (active) active.scrollIntoView({ block: "nearest" });
     }
 
     async function open(descriptor) {
       state.activePath = descriptor.relativePath;
+      // FR-11: reveal the active file — expand its ancestors (matters when it
+      // was reached via an internal link into a collapsed folder).
+      for (const ancestor of Paths.ancestorsOf(descriptor.relativePath)) state.expanded.add(ancestor);
       renderSidebar();
       await Render.render(descriptor, els.content, {
         index: state.index,
@@ -280,23 +336,80 @@
       });
     }
 
+    async function adoptSource(source, restoreFrom) {
+      setPathDisplay(source);
+      setStatus("Reading folder…");
+
+      let markdown, index;
+      try {
+        ({ markdown, index } = await Enumeration.build(source));
+      } catch (err) {
+        setStatus("Could not read this folder — it may have been moved or deleted. Choose it again.");
+        console.error(err);
+        return;
+      }
+
+      const prevActive = restoreFrom ? restoreFrom.activePath : null;
+      const restored = Paths.restoreTreeState(
+        Paths.buildTree(markdown),
+        restoreFrom ? restoreFrom.expanded : new Set(),
+        prevActive
+      );
+
+      state = {
+        source,
+        descriptors: markdown,
+        index,
+        activePath: restored.activePath,
+        expanded: new Set(restored.expanded),
+      };
+      els.filter.disabled = markdown.length === 0;
+      els.refresh.disabled = false;
+      renderSidebar();
+
+      // FR-9: re-render the active document from its FRESH descriptor, or say
+      // clearly that it has gone; stale object URLs are revoked either way.
+      if (restored.activePath) {
+        const active = markdown.find((d) => d.relativePath === restored.activePath);
+        await Render.render(active, els.content, { index, onNavigate: open });
+      } else if (prevActive) {
+        Render.revoke();
+        els.content.innerHTML = "";
+        els.content.appendChild(notice(
+          "The open file (" + prevActive + ") no longer exists in this folder. Choose another file.", false));
+      }
+    }
+
     async function chooseFolder() {
       const source = await FolderAccess.selectFolder();
       if (!source) return;          // cancelled
+      await adoptSource(source, null);
+    }
 
-      els.path.value = source.label + (source.kind === "input" ? "  (fallback picker)" : "");
-      setStatus("Reading folder…");
-      els.list.innerHTML = "";
+    // FR-9 / DR-MR-08: silent re-walk on the FS Access API path; the fallback
+    // FileList is a one-time snapshot, so refresh routes through the picker.
+    async function refreshFolder() {
+      if (!state.source) return;
 
-      try {
-        const { markdown, index } = await Enumeration.build(source);
-        state = { descriptors: markdown, index, activePath: null };
-        els.filter.disabled = markdown.length === 0;
-        renderSidebar();
-      } catch (err) {
-        setStatus("Could not read this folder.");
-        console.error(err);
+      let next = state.source;
+      if (next.kind === "fsapi") {
+        try {
+          const handle = next.handle;
+          const query = handle.queryPermission ? await handle.queryPermission({ mode: "read" }) : "granted";
+          if (query !== "granted") {
+            const granted = handle.requestPermission ? await handle.requestPermission({ mode: "read" }) : "denied";
+            if (granted !== "granted") next = await FolderAccess.selectFolder(); // last resort: re-pick
+          }
+        } catch (_) {
+          next = await FolderAccess.selectFolder();
+        }
+      } else {
+        setStatus("This browser's picker takes a one-time snapshot — choose the folder again to refresh it.");
+        next = await FolderAccess.selectFolder();
       }
+      if (!next) return;            // cancelled — current state stays untouched
+
+      await adoptSource(next, state);
     }
 
     function toggleTheme() {
@@ -308,6 +421,7 @@
 
     // Wire events
     els.choose.addEventListener("click", chooseFolder);
+    els.refresh.addEventListener("click", refreshFolder);
     els.theme.addEventListener("click", toggleTheme);
     els.filter.addEventListener("input", renderSidebar);
 

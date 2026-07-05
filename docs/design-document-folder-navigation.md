@@ -1,6 +1,6 @@
 # Markdown Renderer — Design Document: Folder Tree Navigation & Refresh
 
-**Version:** v0.2
+**Version:** v0.3
 **Date:** 2026-07-05T00:00:00Z
 **Author:** Gary Brooks
 **Reviewer:** AI assistant (CLAUDE Fable 5)
@@ -167,11 +167,11 @@ Numbering continues from design v0.3 (FR-1..FR-8, NFR-1..NFR-5).
 
 | Requirement ID | Design Component | Test Case(s) | Status |
 |----------------|------------------|--------------|--------|
-| FR-9 | Folder Access Module (refresh path) + UI | TC-REF-01..04 | Not Started |
-| FR-10 | Tree Builder (`src/paths.js`) + Sidebar Tree UI | TC-TRE-01..04 | Not Started |
-| FR-11 | Sidebar Tree UI (expansion state) | TC-TRE-05..07 | Not Started |
-| FR-5 (amended) | Sidebar Tree UI (filter mode) | TC-UI-03 | Not Started |
-| NFR-3 (ext) | Refresh error handling | TC-REF-05..06 | Not Started |
+| FR-9 | Folder Access Module (refresh path) + UI | TC-REF-01..04 | Implemented |
+| FR-10 | Tree Builder (`src/paths.js`) + Sidebar Tree UI | TC-TRE-01..04 | Implemented |
+| FR-11 | Sidebar Tree UI (expansion state) | TC-TRE-05..07 | Implemented |
+| FR-5 (amended) | Sidebar Tree UI (filter mode) | TC-UI-03 | Implemented |
+| NFR-3 (ext) | Refresh error handling | TC-REF-05..06 | Implemented |
 
 ---
 
@@ -695,6 +695,7 @@ refreshButton.addEventListener('click', async () => {
 |---------|------|--------|---------|
 | v0.1 | 2026-07-05 | Gary Brooks | Initial draft: FR-9 (refresh), FR-10 (folder tree), FR-11 (drilldown), FR-5 amendment; DR-MR-08..11; Phases 4–5 |
 | v0.2 | 2026-07-05 | Gary Brooks | Resolved open questions Q1 (fallback Refresh re-opens picker) and Q2 (initial tree state collapsed) per proposed answers; no design changes — both confirmed the draft as written |
+| v0.3 | 2026-07-05 | Gary Brooks | Phases 4–5 implemented: `buildTree`/`ancestorsOf`/`restoreTreeState` in `src/paths.js` (+12 unit tests → 23); tree UI, filter mode, refresh in `app.js`; nested `sample-docs/notes/` fixture; E2E suite reworked (6 → 11 tests); traceability → Implemented; `verify` gate green. Implementation note: the fallback's `webkitRelativePath` root-folder prefix is now stripped in enumeration so both backends yield identical folder-relative paths |
 
 ---
 
