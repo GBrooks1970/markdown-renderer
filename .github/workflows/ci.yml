@@ -1,0 +1,52 @@
+# CI gate: every PR and push to main must pass `npm run verify`
+# (typecheck + Vitest unit tests + Playwright E2E).
+#
+# The shipped page is build-free and dependency-free at runtime
+# (docs/design-document.md, DR-MR-02/DR-MR-04); everything installed
+# here is dev-only test tooling. The E2E suite drives the
+# `webkitdirectory` fallback because the native folder picker cannot
+# be automated (design doc §8), so Chromium alone is sufficient.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: verify (Node 24)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify (typecheck + unit + e2e)
+        run: npm run verify
+
+      - name: Upload Playwright report on failure
+        uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: playwright-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: playwright-report/
+          retention-days: 14
