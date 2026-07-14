@@ -62,8 +62,10 @@ Four deterministic UI states, all reached with the suite's existing fixture-load
 | **S4 — Filter flat list** | Type `guide` into `#file-filter` so the tree is replaced by the flat match list (FR-5) | A dynamic content swap: list semantics and the filter input's labelling. |
 
 Each scan waits on the state's own functional assertions (the same ones the existing E2E tests
-use) before invoking axe, so results are deterministic. Scanning further states is optional and
-**must not** widen the public claim beyond these four.
+use) before invoking axe, so results are deterministic. All four states are scanned in the page's
+**default light theme** (the dark theme swaps in a different vendored highlight sheet and is not
+part of the claim). Scanning further states is optional and **must not** widen the public claim
+beyond these four.
 
 ## 4. Standards and rules claimed
 
@@ -93,13 +95,20 @@ use) before invoking axe, so results are deterministic. Scanning further states 
 
 ## 6. Recorded waivers
 
-*To be filled during implementation (Stage 2). If this section still reads "None", no waiver is
-in force and the spec excludes nothing.*
+**None.** The spec excludes nothing: every scan runs the full §4 tag set with no per-rule or
+per-element exclusions. The one violation found was fixed in the page (§7).
 
 ## 7. Findings and resolutions (implementation record)
 
-*To be filled during implementation (Stage 2) from the real axe output: every violation found,
-with its rule id, scope, and whether it was fixed (and how) or waived (per §5).*
+First run of the lane (2026-07-14, `@axe-core/playwright` 4.12.1 / axe-core 4.12.1, tags per §4)
+found **one
+violation**; all other scans were clean. It was fixed — no waiver required:
+
+| State | Axe rule (impact) | Finding | Resolution |
+|---|---|---|---|
+| S3 | `color-contrast` (serious) | The vendored `highlight-github.min.css` (light) theme paints the doctag/keyword/template/type token group `#d73a49`, which is **4.29:1** against the code-block background `#f6f8fa` — below the WCAG AA 4.5:1 minimum. Flagged nodes: `.hljs-keyword` (×2), `.hljs-variable.language_`. | **Fixed in `styles.css`** (vendor files stay pristine): a `[data-theme="light"]`-scoped override recolours that token group to GitHub's darker red `#b31d28` (~**6.3:1** on the same background). Scoped to the light theme because the dark hljs sheet uses different colours. Full `npm run verify` green after the fix (typecheck, 23 unit, 15 E2E incl. the 4 axe scans); visual parity confirmed by screenshot. |
+
+S1, S2, and S4 passed with zero violations on the first run.
 
 ## 8. How to run it
 
