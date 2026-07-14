@@ -98,6 +98,24 @@ npm run verify       # typecheck + unit + e2e (the full gate)
 - **Unit (`spec/`)** — the pure helpers in `src/paths.js`: path/URL resolution (`.`/`..`, query/hash stripping, markdown/external classification) and the sidebar-tree logic (`buildTree` nesting/ordering, `ancestorsOf`, refresh state restoration).
 - **E2E (`e2e/`)** — the real browser flow against `sample-docs/`: the folder tree (dirs first, drilldown, reveal-on-link-navigation), filtering with tree restore, rendering with code highlighting and tables, relative images resolving to `blob:` URLs, internal-link navigation, external links opening in a new tab, and refresh (new file appears, open document survives, vanished document reported). The native File System Access API dialog cannot be automated, so the E2E suite drives the `webkitdirectory` fallback path (same pipeline).
 
+### Accessibility
+
+The E2E suite includes an accessibility lane (`e2e/accessibility.spec.ts`) that runs
+[axe-core](https://github.com/dequelabs/axe-core) via `@axe-core/playwright` (dev-only) on **four
+representative states** of the page in its default light theme: the initial page (no folder
+chosen), the populated tree drilled into a folder, a rendered document (headings, highlighted
+code, table), and the filter's flat match list. Each state is checked against the axe rules
+tagged **`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`** (WCAG 2.0/2.1 levels A and AA); axe
+`best-practice` rules are deliberately excluded, and no per-rule waivers are in force. This claims
+only that those four states pass those rule sets — it is not a general WCAG conformance statement.
+The lane runs inside `npm run verify` (and therefore in CI); on failure the violations are
+attached as JSON to the Playwright report. Scope, policy, and the findings record live in
+[`docs/accessibility-lane.md`](docs/accessibility-lane.md).
+
+```
+npx playwright test e2e/accessibility.spec.ts    # the accessibility lane alone
+```
+
 ---
 
 ## Architecture Overview
@@ -119,6 +137,7 @@ All generated HTML is sanitised before insertion to prevent XSS, and only same-f
 | Document | Location | Purpose |
 |---|---|---|
 | Design Document | `docs/design-document.md` | Full design, requirements, decisions (DR-MR-*), and alternatives |
+| Accessibility Lane | `docs/accessibility-lane.md` | Exact scope of the axe-core lane: states, rule tags, exclusions, waiver policy, findings |
 | Project README | `readme.md` | This entry point |
 
 ---

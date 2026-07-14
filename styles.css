@@ -205,6 +205,15 @@ body {
   border: 1px solid var(--border);
 }
 .markdown-body pre code { background: none; padding: 0; }
+/* MR-09 accessibility fix: the vendored github-light hljs theme paints this token
+   group #d73a49, which is 4.29:1 against --code-bg (#f6f8fa) — below the WCAG AA
+   4.5:1 minimum (axe color-contrast). Overridden here (vendor files stay pristine)
+   with GitHub's darker red, ~6.3:1 on the same background. Light theme only: the
+   dark hljs sheet uses different colours. */
+[data-theme="light"] .hljs-doctag, [data-theme="light"] .hljs-keyword,
+[data-theme="light"] .hljs-meta .hljs-keyword, [data-theme="light"] .hljs-template-tag,
+[data-theme="light"] .hljs-template-variable, [data-theme="light"] .hljs-type,
+[data-theme="light"] .hljs-variable.language_ { color: #b31d28; }
 .markdown-body blockquote { color: var(--text-muted); border-left: 4px solid var(--border); padding-left: 1em; }
 .markdown-body table { border-collapse: collapse; margin: 0 0 1em; display: block; overflow-x: auto; }
 .markdown-body th, .markdown-body td { border: 1px solid var(--border); padding: .4em .7em; }
