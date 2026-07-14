@@ -6,8 +6,8 @@
 
 # Markdown Renderer — Backlog
 
-**Version:** 1 — first backlog; project onboarded to the portfolio registry (PORTFOLIO_BACKLOG P-01)
-**Last Updated:** 2026-07-07
+**Version:** 2 — MR-09 accessibility evidence lane opened (portfolio P-08)
+**Last Updated:** 2026-07-14
 **Based on:** session-notes handover **v3** (2026-07-05T2258Z) and the repo at `main`.
 
 This backlog is the project's **source of truth** for item status — handovers narrate, this file
@@ -29,10 +29,29 @@ records. Ordering is by priority score (highest first).
 
 ## Outstanding Risks
 
-**None outstanding.** As of handover v3 the product is **complete, published, and feature-extended**:
+### MR-09 — Accessibility evidence lane (axe-core) — 8 LOW — 🔓 OPEN
+
+**Source:** portfolio backlog **P-08** ("Add a focused accessibility evidence lane"), which selects
+this project as host. Design note: [`docs/accessibility-lane.md`](accessibility-lane.md) — written
+first, so the scope of the claim is fixed by design.
+
+**Score:** Security Impact 0 + Breakage Probability 3 + Maintenance Burden 5 = **8**.
+
+**Scope:** add `@axe-core/playwright` (dev-only) and an `e2e/accessibility.spec.ts` that scans four
+representative states (initial page; tree populated and drilled; document rendered; filter flat
+list) against the axe tags `wcag2a`/`wcag2aa`/`wcag21a`/`wcag21aa` (`best-practice` deliberately
+excluded), inside the existing `npm run verify` gate. Violations are fixed where the build-free/
+vendored/`file://` runtime contract allows, otherwise recorded as narrow per-rule, per-scope
+waivers in the design note. README then claims exactly the states and tags scanned — nothing more.
+
+**Invariants:** no runtime dependency or build step; `npm audit` stays 0; the CI check name
+`verify (Node 24)` is unchanged.
+
+---
+
+Prior to MR-09, as of handover v3 the product was **complete, published, and feature-extended**:
 FR-1..FR-11 are all implemented and live, the `verify` gate is green (typecheck + 23 Vitest + 11
 Playwright), CI is green on `main`, and the GitHub Pages demo is verified serving the current build.
-The project sits at a natural close point.
 
 ---
 
@@ -63,8 +82,8 @@ and merged 2026-07-05 (PRs #1 design, #2 implementation); live demo verified.
 |---|---|---|
 | HIGH (20–30) | 0 | — |
 | MEDIUM (10–19) | 0 | — |
-| LOW (0–9) | 0 | — |
-| **Total Outstanding** | **0** | — |
+| LOW (0–9) | 1 | MR-09 open |
+| **Total Outstanding** | **1** | MR-09 |
 | Resolved / Shipped | FR-1..FR-11 | all delivered and live |
 
 ---
