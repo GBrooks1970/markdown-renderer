@@ -7,7 +7,7 @@
 
 # Markdown Renderer
 
-**Updated: 2026-07-05**
+**Updated: 2026-07-14**
 
 A general-purpose, self-contained static HTML page that renders local markdown files. Pick a folder, browse its markdown files in a sidebar, and read any of them as formatted, syntax-highlighted HTML in a scrollable pane. It runs entirely client-side with **no build step and no network connection** — open the page in a browser and use it.
 
@@ -144,6 +144,17 @@ All generated HTML is sanitised before insertion to prevent XSS, and only same-f
 
 **Cause:** The API needs a secure context.
 **Solution:** Serve the page from `localhost` (e.g. `npx serve`), or rely on the `file://` fallback picker.
+
+---
+
+## Licence
+
+[Apache License 2.0](LICENSE) — © 2026 Gary Brooks.
+
+This licence covers the original Markdown Renderer code and documentation. The runtime distribution
+also contains pinned copies of Marked, DOMPurify, and highlight.js under their respective upstream
+terms. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and the complete, versioned texts under
+[`vendor/licenses/`](vendor/licenses/).
 
 ---
 
