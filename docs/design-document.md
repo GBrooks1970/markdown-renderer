@@ -1,10 +1,10 @@
 # Markdown Renderer — Design Document
 
-**Version:** v0.3
-**Date:** 2026-06-15T00:00:00Z
+**Version:** v0.4
+**Date:** 2026-07-20T00:00:00Z
 **Author:** Gary Brooks
 **Reviewer:** AI assistant (CLAUDE Opus 4.8)
-**Status:** Draft
+**Status:** Implemented
 
 ---
 
@@ -214,15 +214,15 @@ Markdown is plain text by design; viewing it *formatted* needs a parser plus a h
 
 | Requirement ID | Design Component | Test Case(s) | Status |
 |----------------|------------------|--------------|--------|
-| FR-1 | Folder Access Module | TC-SEL-01..03 | Not Started |
-| FR-2 | Enumeration Module | TC-ENU-01..03 | Not Started |
-| FR-3 | Render Module | TC-REN-01..04 | Not Started |
-| FR-4 | Layout / CSS | TC-UI-01 | Not Started |
-| FR-5 | Sidebar UI | TC-UI-02 | Not Started |
-| FR-6 | Render Module (highlight) | TC-REN-05 | Not Started |
-| FR-7 | Folder Access Module (fallback) | TC-SEL-04 | Not Started |
-| FR-8 | Resource Resolution Module | TC-RES-01..04 | Not Started |
-| NFR-4 | Render Module (sanitise) | TC-SEC-01..03 | Not Started |
+| FR-1 | Folder Access Module | TC-SEL-01..03 | Shipped |
+| FR-2 | Enumeration Module | TC-ENU-01..03 | Shipped |
+| FR-3 | Render Module | TC-REN-01..04 | Shipped |
+| FR-4 | Layout / CSS | TC-UI-01 | Shipped |
+| FR-5 | Sidebar UI | TC-UI-02 | Shipped |
+| FR-6 | Render Module (highlight) | TC-REN-05 | Shipped |
+| FR-7 | Folder Access Module (fallback) | TC-SEL-04 | Shipped |
+| FR-8 | Resource Resolution Module | TC-RES-01..04 | Shipped |
+| NFR-4 | Render Module (sanitise) | TC-SEC-01..03 | Shipped |
 
 ---
 
@@ -284,8 +284,8 @@ A single page hosts two panes. `app.js` orchestrates three logical modules. The 
 | Markup/Layout | HTML5 + CSS3 | — | Native, zero-build |
 | Logic | Vanilla JavaScript (ES2020) | — | No framework needed; inspectable (DR-MR-04) |
 | Markdown parse | marked | pinned (latest stable at build) | Fast, small, widely used |
-| Unit/Integration tests | Vitest (+ jsdom) | ^2.1 | Portfolio convention (hand-baked); dev-only (DR-MR-06) |
-| E2E tests | Playwright | 1.60.x | Portfolio convention (calculator/magento); drives `webkitdirectory` fallback |
+| Unit/Integration tests | Vitest (node env, no jsdom — the tested `src/paths.js` helpers are pure, no DOM) | ^4.1 | Portfolio convention (hand-baked); dev-only (DR-MR-06) |
+| E2E tests | Playwright | ^1.53 | Portfolio convention (calculator/magento); drives `webkitdirectory` fallback |
 | Sanitisation | DOMPurify | pinned | Industry-standard XSS sanitiser (DR-MR-03) |
 | Syntax highlight | highlight.js | pinned | De-facto code highlighter |
 | Hosting of libs | Local `vendor/` | — | Offline, reproducible (DR-MR-02) |
@@ -760,6 +760,7 @@ document.querySelector('#choose').addEventListener('click', async () => {
 | v0.1 | 2026-06-15 | Gary Brooks | Initial draft for review |
 | v0.2 | 2026-06-15 | Gary Brooks | Resolved open questions: added FR-8 + Resource Resolution Module (DR-MR-05) and Vitest/Playwright test tooling (DR-MR-06); updated scope, traceability, Phase 3, and §8 |
 | v0.3 | 2026-06-15 | Gary Brooks | Implementation + tests: extracted pure helpers to `src/paths.js` (DR-MR-07) with Path Helpers component; 11 Vitest unit tests + 6 Playwright E2E tests; `verify` gate green |
+| v0.4 | 2026-07-20 | Gary Brooks | Currency pass (review R-02): flipped Status to Implemented and the Requirements Traceability Matrix to Shipped (FR-1..FR-8, NFR-4 — all had been sitting at their pre-build Draft values despite the project having shipped); corrected the tech-stack table to the actual installed Vitest 4 (node env, no jsdom) and Playwright ^1.53 |
 
 ---
 
