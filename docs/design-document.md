@@ -285,7 +285,7 @@ A single page hosts two panes. `app.js` orchestrates three logical modules. The 
 | Logic | Vanilla JavaScript (ES2020) | — | No framework needed; inspectable (DR-MR-04) |
 | Markdown parse | marked | pinned (latest stable at build) | Fast, small, widely used |
 | Unit/Integration tests | Vitest (node env, no jsdom — the tested `src/paths.js` helpers are pure, no DOM) | ^4.1 | Portfolio convention (hand-baked); dev-only (DR-MR-06) |
-| E2E tests | Playwright | ^1.53 | Portfolio convention (calculator/magento); drives `webkitdirectory` fallback |
+| E2E tests | Playwright | ^1.61 | Portfolio convention (calculator/magento); drives `webkitdirectory` fallback |
 | Sanitisation | DOMPurify | pinned | Industry-standard XSS sanitiser (DR-MR-03) |
 | Syntax highlight | highlight.js | pinned | De-facto code highlighter |
 | Hosting of libs | Local `vendor/` | — | Offline, reproducible (DR-MR-02) |
