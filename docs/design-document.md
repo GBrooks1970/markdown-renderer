@@ -598,8 +598,9 @@ Scenario: Browse and read a markdown file
 ### Test Automation
 
 **Tools:**
-- Unit/Integration: **Vitest** with jsdom (matches `hand-baked-screenplay-pattern`).
+- Unit/Integration: **Vitest**, node environment, no jsdom — the tested `src/paths.js` helpers are pure (portfolio convention per `hand-baked-screenplay-pattern`, adapted since this project's helpers need no DOM).
 - E2E: **Playwright** (matches `calculator`/`magento`), driving the **`webkitdirectory` fallback** via `setInputFiles` — the File System Access API native picker is an OS dialog Playwright cannot automate, so E2E targets the fallback path, which exercises the same enumeration→render pipeline.
+- E2E runs **Chromium only** (`playwright.config.ts`'s `projects`); cross-engine (WebKit/Firefox) rendering is verified manually, not in CI, since the deliberately single-engine automated pipeline doesn't cover it (review R-04).
 - All test tooling is **dev-only** (`devDependencies`); the shipped page (`index.html` + `vendor/`) remains build-free (DR-MR-06).
 
 **CI/CD Integration:**
