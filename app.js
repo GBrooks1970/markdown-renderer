@@ -251,21 +251,28 @@
 
     function fileItem(descriptor, showPath) {
       const li = document.createElement("li");
-      li.className = "file-list__item" + (descriptor.relativePath === state.activePath ? " is-active" : "");
-      li.title = descriptor.relativePath;
+
+      // A real <button>, not a clickable <li> — keyboard-focusable and
+      // Enter/Space-activatable for free, per the original folder-navigation
+      // design (docs/design-document-folder-navigation.md).
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "file-list__item" + (descriptor.relativePath === state.activePath ? " is-active" : "");
+      btn.title = descriptor.relativePath;
 
       const name = document.createElement("span");
       name.textContent = descriptor.name;
-      li.appendChild(name);
+      btn.appendChild(name);
 
       if (showPath && descriptor.relativePath.includes("/")) {
         const sub = document.createElement("span");
         sub.className = "file-list__path";
         sub.textContent = descriptor.relativePath.slice(0, descriptor.relativePath.lastIndexOf("/"));
-        li.appendChild(sub);
+        btn.appendChild(sub);
       }
 
-      li.addEventListener("click", () => open(descriptor));
+      btn.addEventListener("click", () => open(descriptor));
+      li.appendChild(btn);
       return li;
     }
 

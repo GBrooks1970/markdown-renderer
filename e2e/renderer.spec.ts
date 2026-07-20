@@ -60,6 +60,18 @@ test.describe('Markdown Renderer', () => {
     await expect(page.locator('#content table')).toBeVisible();
   });
 
+  test('a file row is keyboard-focusable and Enter activates it', async ({ page }) => {
+    await openFolder(page);
+
+    const row = page.locator('.file-list__item', { hasText: 'index.md' });
+    await row.focus();
+    await expect(row).toBeFocused();
+
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#content h1')).toHaveText('Sample Docs — Home');
+    await expect(row).toHaveClass(/is-active/);
+  });
+
   test('filters as a flat list and restores the tree (with expansion) on clear', async ({ page }) => {
     await openFolder(page);
     await page.locator('.tree-dir > summary', { hasText: 'notes' }).click(); // expand first
