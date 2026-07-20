@@ -28,6 +28,11 @@ async function expectNoAxeViolations(page: Page, testInfo: TestInfo): Promise<vo
 }
 
 test.describe('Accessibility lane (axe-core, WCAG 2.0/2.1 A+AA)', () => {
+  // Review R-03 (LOW): axe-core's full-page scan is slow on a cold start (browser +
+  // dev-server startup contending for CPU); give this lane headroom the rest of the
+  // suite doesn't need, plus one CI retry for the same cold-start variance.
+  test.describe.configure({ timeout: 60_000, retries: process.env.CI ? 1 : 0 });
+
   test('S1 — initial page, no folder chosen', async ({ page }, testInfo) => {
     await page.goto('/');
     await expect(page.locator('#refresh-folder')).toBeDisabled();
