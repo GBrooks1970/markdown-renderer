@@ -190,7 +190,7 @@ Markdown is plain text by design; viewing it *formatted* needs a parser plus a h
   - When it displays / the link is clicked
   - Then the image renders from a same-folder `blob:` URL, and the link loads the target file into the pane.
   - And remote/absolute `src` values are not injected; external links open in a new tab.
-- **Security Constraint:** Only `blob:` URLs derived from files within the picked folder are injected (DR-MR-05); the sanitiser is configured to permit `blob:` and block other dynamic schemes.
+- **Security Constraint:** `blob:` URLs are not sanitiser-permitted content — they never pass through `DOMPurify.sanitize()` at all. The rendered HTML is sanitised first (`app.js` line 201), *then* parsed into an inert `<template>` fragment (nothing in it loads), and only afterwards does `Resolve.apply` (`app.js` lines 145-161) directly set `img.src` via the DOM property (not an HTML string) to an object URL created from a same-folder file read through the picked-folder handle. Because the assignment never re-enters HTML parsing, no sanitiser allow-list for `blob:` is required or configured (DR-MR-05).
 - **Priority:** Should Have
 
 ### Non-Functional Requirements
@@ -504,7 +504,7 @@ FUNCTION walk(dirHandle, prefix, out):
 **Goal:** Relative-resource resolution, robustness, filter, theming, and empty/error states.
 
 **Tasks:**
-1. **Resource Resolution Module (FR-8)** — lazy folder index + relative-path resolver; relative images via same-folder `blob:` URLs (with object-URL lifecycle management), internal `.md` link interception, external links to new tab, sanitiser configured to permit `blob:`.
+1. **Resource Resolution Module (FR-8)** — lazy folder index + relative-path resolver; relative images via same-folder `blob:` URLs (with object-URL lifecycle management, set post-sanitisation on an inert fragment — see §3 Security Constraint), internal `.md` link interception, external links to new tab.
 2. Quick filter (FR-5).
 3. Light/dark theme toggle.
 4. Empty-folder / no-markdown / unsupported-browser messaging.
