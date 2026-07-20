@@ -6,9 +6,13 @@
 
 # Markdown Renderer — Backlog
 
-**Version:** 3 — MR-09 accessibility evidence lane delivered (portfolio P-08)
-**Last Updated:** 2026-07-14
-**Based on:** session-notes handover **v3** (2026-07-05T2258Z) and the repo at `main`.
+**Version:** 4 — code review v1 findings (R-01..R-06) resolved via WORKLIST_markdown-renderer.md
+**Last Updated:** 2026-07-20
+**Based on:** session-notes handover **v3** (2026-07-05T2258Z), code review v1
+(`.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260718T1110Z/`, 2026-07-18 — no HIGH findings),
+remediated by TRIAGE-01..06 on PRs
+[#7](https://github.com/GBrooks1970/markdown-renderer/pull/7)–[#12](https://github.com/GBrooks1970/markdown-renderer/pull/12),
+merged 2026-07-20, and the repo at `main`.
 
 This backlog is the project's **source of truth** for item status — handovers narrate, this file
 records. Ordering is by priority score (highest first).
@@ -30,15 +34,35 @@ records. Ordering is by priority score (highest first).
 ## Outstanding Risks
 
 **None outstanding.** MR-09 (the accessibility evidence lane, opened from portfolio P-08) was
-resolved in the same cycle that opened it — see Resolved / Shipped. The product remains
-**complete, published, and feature-extended**: FR-1..FR-11 and MR-09 are implemented and live, the
-`verify` gate is green, CI is green on `main`, and the GitHub Pages demo serves the current build.
+resolved in the same cycle that opened it; the first code review (v1) found no HIGH findings and
+all six of its findings (R-01..R-06) are now resolved — see Resolved / Shipped. The product
+remains **complete, published, and feature-extended**: FR-1..FR-11 and MR-09 are implemented and
+live, the `verify` gate is green, CI is green on `main`, and the GitHub Pages demo serves the
+current build.
 
 ---
 
 ### Resolved / Shipped
 
 Kept as a record of what has been delivered — do not delete.
+
+#### Code review v1 findings (R-01..R-06) — ✅ RESOLVED 2026-07-20
+
+**Source:** `.review/CODE_REVIEW_CLAUDE_Fable_5_v1_20260718T1110Z/` (first review of this project,
+2026-07-18 — no HIGH findings). Triaged into `WORKLIST_markdown-renderer.md`, delivered one item
+per `loop-worklist` iteration.
+
+| Item | Finding | Resolution | Commit / PR |
+|---|---|---|---|
+| TRIAGE-01 | R-01 (MEDIUM): sidebar file rows had no keyboard path | `fileItem()` now renders `<li><button type="button">`, matching the original folder-navigation design's spec exactly; native button semantics give Enter/Space activation for free; new Playwright test | `efb7cc8` / PR #7 |
+| TRIAGE-02 | R-02 (MEDIUM): design doc still said Draft/Not Started despite shipping | Status → Implemented, v0.3→v0.4; traceability matrix flipped to Shipped; tech-stack table corrected to actual installed versions | `1e8b95f` / PR #8 |
+| TRIAGE-03 | R-03 (LOW): axe lane could time out on a cold start | `test.describe.configure({ timeout: 60_000, retries: process.env.CI ? 1 : 0 })` scoped to the accessibility describe block | `ca222b0` / PR #10 |
+| TRIAGE-04 | R-04 (LOW): no documented cross-engine verification stance | One sentence added to §8 stating WebKit/Firefox rendering is verified manually, not in CI (decision: document, don't add browser projects) | `83f95b6` / PR #11 |
+| TRIAGE-05 | R-05 (LOW): FR-8's security note described the wrong mechanism | Rewrote the note to the real code path (sanitise on raw HTML with default config → inert `<template>` → `img.src` set via direct DOM property assignment, never re-entering the sanitiser) | `acb8741` / PR #9 |
+| TRIAGE-06 | R-06 (LOW): `@types/node` had a real major-version gap vs. CI's Node 24 | `@types/node` `^22`→`^24`; `@playwright/test`/`vitest` patch bumps taken | `dd2003b` / PR #12 |
+
+`npm run verify` green throughout (23/23 Vitest, 16/16 Playwright); `npm audit` 0 vulnerabilities.
+3 stale merged remote branches pruned as end-of-cycle housekeeping.
 
 #### MR-09 — Accessibility evidence lane (axe-core) — 8 LOW — ✅ RESOLVED 2026-07-14
 
@@ -84,7 +108,7 @@ and merged 2026-07-05 (PRs #1 design, #2 implementation); live demo verified.
 | MEDIUM (10–19) | 0 | — |
 | LOW (0–9) | 0 | — |
 | **Total Outstanding** | **0** | — |
-| Resolved / Shipped | FR-1..FR-11, MR-09 | all delivered and live |
+| Resolved / Shipped | FR-1..FR-11, MR-09, review v1 (R-01..R-06) | all delivered and live |
 
 ---
 
@@ -93,13 +117,13 @@ and merged 2026-07-05 (PRs #1 design, #2 implementation); live demo verified.
 Not yet prioritised as risks — the natural next tranche, should the project be picked up again.
 
 ### LOW Priority
-1. **Formal close-project run** — the handover v3 successor path: verify every public claim, retire
-   any worklist, write a terminal FINAL handover. The product is at a genuine close point.
+1. **Formal close-project run** — verify every public claim, retire any worklist, write a terminal
+   FINAL handover. The product has been at a genuine close point since v3/v4; the review v1 cycle
+   (2026-07-20) is a second natural close checkpoint.
 2. ~~**Accessibility pass (axe-core)**~~ — ✅ delivered as **MR-09** (2026-07-14, portfolio P-08).
 3. **Visual-regression baselines** — a viewer whose whole point is rendering fidelity is the natural
    fit for Playwright screenshot baselines / Percy. *(See PORTFOLIO_BACKLOG Part B gap 5.)*
-4. **`.html` companions for the handovers** — v1..v3 handovers are `.md`-only; generate the `.html`
-   pair for consistency with the other projects. *(Portfolio finding 4.)*
+4. ~~**`.html` companions for the handovers**~~ — done; v1..v4 all have `.md`+`.html` pairs.
 
 ---
 
